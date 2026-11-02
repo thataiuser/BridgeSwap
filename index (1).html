@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bridgeswap: buy and swap crypto</title>
+<style>
+:root{--bg:#eef2f6;--card:#fff;--ink:#0d1b2e;--mute:#5a6a7e;--line:#d5dde7;--acc:#0b5fff;--acc-ink:#fff;--warn:#fff4d6;--warn-ink:#6b4a00;--ok:#0c7a4d;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a121e;--card:#121d2d;--ink:#e8eef6;--mute:#93a3b8;--line:#25344a;--acc:#5b93ff;--acc-ink:#04122e;--warn:#3a2e0a;--warn-ink:#f3d98a;--ok:#4fd39a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0a121e;--card:#121d2d;--ink:#e8eef6;--mute:#93a3b8;--line:#25344a;--acc:#5b93ff;--acc-ink:#04122e;--warn:#3a2e0a;--warn-ink:#f3d98a;--ok:#4fd39a;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,"Times New Roman",serif}
+.sans,button,input,select{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;justify-content:space-between;align-items:center;max-width:960px;margin:0 auto;padding:20px 20px 0}
+.logo{font-weight:700;font-size:22px;letter-spacing:-.02em}
+header button{background:none;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 14px;cursor:pointer}
+main{max-width:960px;margin:0 auto;padding:20px;display:grid;grid-template-columns:1fr 440px;gap:40px;align-items:start}
+h1{font-size:clamp(34px,5vw,52px);line-height:1.05;letter-spacing:-.03em;margin:24px 0 16px}
+.lead{color:var(--mute);max-width:44ch}
+.how{margin:28px 0 0;padding:0;list-style:none;display:grid;gap:14px}
+.how li{border-left:3px solid var(--acc);padding-left:14px}
+.how b{display:block}
+.how span{color:var(--mute);font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(13,27,46,.08)}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px}
+.tabs button{border:1px solid var(--line);background:none;color:var(--ink);border-radius:10px;padding:9px 4px;font-size:13px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+label{display:block;font-size:13px;color:var(--mute);margin:0 0 6px}
+.box{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+.row{display:flex;gap:10px;align-items:center}
+input,select{font-size:16px;color:var(--ink);background:transparent;border:0;outline:0;min-width:0}
+input.amt{flex:1;font-size:26px;font-weight:600;width:100%}
+select{border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--card)}
+input.addr{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--card)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.flip{display:block;margin:-6px auto 6px;background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:50%;width:34px;height:34px;cursor:pointer}
+.quote{font-size:14px;color:var(--mute);display:grid;gap:4px;margin:14px 0}
+.quote div{display:flex;justify-content:space-between}
+.quote b{color:var(--ink);font-weight:600}
+.go{width:100%;background:var(--acc);color:var(--acc-ink);border:0;border-radius:12px;padding:14px;font-size:17px;font-weight:600;cursor:pointer}
+.go:disabled{opacity:.5;cursor:not-allowed}
+.err{color:#c0392b;font-size:14px;min-height:20px;margin:4px 0}
+.note{background:var(--warn);color:var(--warn-ink);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:14px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.modal .card{max-width:400px;width:100%}
+.modal h2{margin:0 0 8px}
+.ok{color:var(--ok)}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--mute);margin:0 6px 6px 0}
+footer{max-width:960px;margin:0 auto;padding:10px 20px 40px;color:var(--mute);font-size:13px}
+@media(max-width:860px){main{grid-template-columns:1fr;gap:12px}}
+.orbs{position:fixed;inset:0;overflow:hidden;z-index:-1;pointer-events:none}
+.orbs i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.45;animation:drift 18s ease-in-out infinite alternate}
+.orbs i:nth-child(1){width:380px;height:380px;background:#0b5fff;top:-80px;left:-60px}
+.orbs i:nth-child(2){width:320px;height:320px;background:#f5a623;bottom:-60px;right:8%;animation-duration:23s}
+.orbs i:nth-child(3){width:260px;height:260px;background:#19c39b;top:40%;left:45%;animation-duration:28s}
+@keyframes drift{to{transform:translate(90px,60px) scale(1.25)}}
+.ticker{overflow:hidden;white-space:nowrap;border-block:1px solid var(--line);background:var(--card);margin-top:16px;font:600 14px system-ui,sans-serif}
+.ticker div{display:inline-block;padding:9px 0;animation:scroll 34s linear infinite}
+.ticker:hover div{animation-play-state:paused}
+.ticker span{margin:0 22px}
+.ticker em{font-style:normal;margin-left:6px;transition:color .3s}
+.up{color:var(--ok)}.dn{color:#e5484d}
+@keyframes scroll{to{transform:translateX(-50%)}}
+.coins{position:relative;height:120px;margin:6px 0 0}
+.coins b{position:absolute;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 18px system-ui,sans-serif;box-shadow:0 8px 20px rgba(0,0,0,.25);animation:float 4s ease-in-out infinite}
+.coins b:nth-child(1){background:#f7931a;left:0}
+.coins b:nth-child(2){background:#627eea;left:80px;animation-delay:-1s}
+.coins b:nth-child(3){background:#26a17b;left:160px;animation-delay:-2s}
+.coins b:nth-child(4){background:#9945ff;left:240px;animation-delay:-3s}
+@keyframes float{50%{transform:translateY(-26px) rotate(12deg)}}
+.live{display:inline-flex;align-items:center;gap:6px;font:600 12px system-ui,sans-serif;color:var(--ok)}
+.live:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulse 1.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--ok)}100%{box-shadow:0 0 0 10px transparent}}
+.flash{animation:fl .6s}
+@keyframes fl{0%{background:rgba(25,195,155,.35)}100%{background:transparent}}
+.go{position:relative;overflow:hidden;transition:transform .15s}
+.go:not(:disabled):hover{transform:translateY(-2px)}
+.go:after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:shine 3.2s infinite}
+@keyframes shine{to{left:130%}}
+.card{animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}}
+.modal.on .card{animation:pop .35s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pop{from{opacity:0;transform:scale(.85)}}
+.tabs button{transition:background .2s,transform .15s}.tabs button:hover{transform:translateY(-2px)}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="orbs" aria-hidden="true"><i></i><i></i><i></i></div>
+<header><div class="logo">Bridgeswap</div><button id="theme" type="button">Switch theme</button></header>
+<div class="ticker" aria-hidden="true"><div id="tk"></div></div>
+<main>
+<section>
+<div class="coins" aria-hidden="true"><b>₿</b><b>Ξ</b><b>₮</b><b>◎</b></div>
+<h1>Pay your way. Get crypto in minutes.</h1>
+<p class="lead">Buy crypto with a card, PayPal or mobile money, or swap one coin for another. Choose how you pay, choose what you get, and see the full cost before you confirm.</p>
+<ul class="how">
+<li><b>Pick a payment method</b><span>Card, PayPal, MTN MoMo, Orange Money, or another cryptocurrency.</span></li>
+<li><b>Enter your wallet address</b><span>Your coins are sent straight to a wallet you control.</span></li>
+<li><b>Confirm the quote</b><span>The rate, fee and amount you receive are shown up front.</span></li>
+</ul>
+<div style="margin-top:24px"><span class="pill">Visa / Mastercard</span><span class="pill">PayPal</span><span class="pill">MTN MoMo</span><span class="pill">Orange Money</span><span class="pill">BTC · ETH · USDT · SOL · BNB</span></div>
+</section>
+
+<section class="card sans" aria-label="Swap form">
+<div class="tabs" id="tabs" role="group" aria-label="Payment method"></div>
+<div class="box">
+<label for="amt">You pay</label>
+<div class="row"><input id="amt" class="amt" type="number" inputmode="decimal" min="0" value="50" aria-label="Amount you pay"><select id="payAsset" aria-label="Pay currency"></select></div>
+</div>
+<button class="flip" id="flip" type="button" aria-label="Swap direction" title="Swap direction">⇅</button>
+<div class="box">
+<label for="out">You receive (estimate)</label>
+<div class="row"><input id="out" class="amt" readonly value="0"><select id="getAsset" aria-label="Receive cryptocurrency"></select></div>
+</div>
+<label for="addr">Your wallet address</label>
+<input id="addr" class="addr" placeholder="Paste the receiving address" autocomplete="off">
+<div id="extra" style="margin-top:10px"></div>
+<div class="quote" id="quote"></div>
+<div class="err" id="err" role="alert"></div>
+<button class="go" id="go" type="button">Review order</button>
+</section>
+</main>
+<footer>Crypto prices change quickly and can lose value. Only swap what you can afford to lose. Prices by <a href="https://www.coingecko.com" style="color:inherit">CoinGecko</a>.</footer>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="card sans">
+<h2 id="mt" class="ok">Order reviewed</h2>
+<p id="mb"></p>
+<p style="color:var(--mute);font-size:14px">In a live site, this is where the customer would be sent to the secure payment page.</p>
+<button class="go" id="close" type="button">Close</button>
+</div></div>
+
+<script>
+// Placeholder USD prices for demo only
+var USD={BTC:100000,ETH:3500,USDT:1,SOL:180,BNB:600};
+var FIAT={USD:1,EUR:1.08,XAF:0.00165};
+var METHODS={
+card:{name:"Card",fiat:["USD","EUR"],fee:.035,extra:"card"},
+paypal:{name:"PayPal",fiat:["USD","EUR"],fee:.04,extra:"email"},
+momo:{name:"Mobile money",fiat:["XAF"],fee:.025,extra:"momo"},
+crypto:{name:"Crypto",fiat:null,fee:.005,extra:""}
+};
+var state={m:"card"};
+var $=function(i){return document.getElementById(i)};
+function opts(sel,list,keep){var v=keep&&list.indexOf(sel.value)>-1?sel.value:list[0];sel.innerHTML=list.map(function(x){return "<option>"+x+"</option>"}).join("");sel.value=v}
+function renderTabs(){
+$("tabs").innerHTML=Object.keys(METHODS).map(function(k){return '<button type="button" data-k="'+k+'" aria-pressed="'+(k===state.m)+'">'+METHODS[k].name+'</button>'}).join("");
+Array.prototype.forEach.call($("tabs").children,function(b){b.onclick=function(){state.m=b.dataset.k;setup();}});
+}
+function setup(){
+var m=METHODS[state.m];
+renderTabs();
+opts($("payAsset"),m.fiat||Object.keys(USD),true);
+var all=Object.keys(USD).filter(function(c){return c!==$("payAsset").value});
+opts($("getAsset"),all,true);
+var e=$("extra");
+if(m.extra==="card")e.innerHTML='<label for="x1">Card number</label><input id="x1" class="addr" inputmode="numeric" placeholder="1234 5678 9012 3456" maxlength="19">';
+else if(m.extra==="email")e.innerHTML='<label for="x1">PayPal email</label><input id="x1" class="addr" type="email" placeholder="you@example.com">';
+else if(m.extra==="momo")e.innerHTML='<label for="x1">Mobile money number</label><input id="x1" class="addr" type="tel" placeholder="6XX XXX XXX"><div style="margin-top:8px"><select id="x2" aria-label="Operator"><option>MTN MoMo</option><option>Orange Money</option></select></div>';
+else e.innerHTML="";
+calc();
+}
+function calc(){
+var m=METHODS[state.m],pay=$("payAsset").value,get=$("getAsset").value,a=parseFloat($("amt").value)||0;
+var usd=a*(m.fiat?FIAT[pay]:USD[pay]);
+var fee=usd*m.fee,net=Math.max(usd-fee,0),got=net/USD[get];
+$("out").value=got?got.toLocaleString("en",{maximumFractionDigits:got<1?6:4}):"0";
+$("quote").innerHTML="<div><span>Rate</span><b>1 "+get+" ≈ $"+USD[get].toLocaleString("en")+"</b></div><div><span>Fee ("+(m.fee*100).toFixed(1)+"%)</span><b>$"+fee.toFixed(2)+"</b></div><div><span>Arrival time</span><b>"+(state.m==="crypto"?"10–30 min":state.m==="momo"?"1–5 min":"5–15 min")+"</b></div>";
+return {a:a,pay:pay,get:get,got:$("out").value,fee:fee};
+}
+function validAddr(v,c){v=v.trim();
+if(c==="BTC")return /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,60}$/.test(v);
+if(c==="SOL")return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(v);
+return /^0x[a-fA-F0-9]{40}$/.test(v)||(c==="USDT"&&/^T[a-zA-Z0-9]{33}$/.test(v));}
+$("amt").oninput=calc;$("getAsset").onchange=calc;
+$("payAsset").onchange=function(){if(state.m==="crypto"){var all=Object.keys(USD).filter(function(c){return c!==$("payAsset").value});opts($("getAsset"),all,true)}calc()};
+$("flip").onclick=function(){if(state.m!=="crypto"){state.m="crypto";setup()}var p=$("payAsset").value,g=$("getAsset").value;$("payAsset").value=g;opts($("getAsset"),Object.keys(USD).filter(function(c){return c!==g}),false);$("getAsset").value=p;calc()};
+$("go").onclick=function(){
+var q=calc(),err="";
+if(q.a<=0)err="Enter an amount greater than 0.";
+else if(!validAddr($("addr").value,q.get))err="Enter a valid "+q.get+" wallet address.";
+else if($("x1")&&!$("x1").value.trim())err="Fill in your "+METHODS[state.m].name+" details.";
+$("err").textContent=err;
+if(err)return;
+$("mb").textContent="You pay "+q.a+" "+q.pay+" with "+METHODS[state.m].name+" and receive about "+q.got+" "+q.get+". Fee: $"+q.fee.toFixed(2)+".";
+$("modal").classList.add("on");$("close").focus();
+};
+$("close").onclick=function(){$("modal").classList.remove("on")};
+$("theme").onclick=function(){var d=document.documentElement,dark=(d.dataset.theme?d.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches);d.dataset.theme=dark?"light":"dark"};
+// Live demo prices: simulated random walk
+var BASE=JSON.parse(JSON.stringify(USD)),LAST=JSON.parse(JSON.stringify(USD));
+function fmt(c){return "$"+USD[c].toLocaleString("en",{maximumFractionDigits:USD[c]<10?3:0})}
+var one=Object.keys(USD).map(function(c){return '<span>'+c+' <em data-c="'+c+'">'+fmt(c)+'</em></span>'}).join("");
+$("tk").innerHTML=one+one+one+one;
+var LIVE=false;
+function tick(){
+if(LIVE)return;
+Object.keys(USD).forEach(function(c){
+var drift=(c==="USDT"?.0004:.004)*(Math.random()*2-1);
+USD[c]=Math.max(BASE[c]*.8,Math.min(BASE[c]*1.2,USD[c]*(1+drift)));
+var cls=USD[c]>=LAST[c]?"up":"dn";LAST[c]=USD[c];
+Array.prototype.forEach.call(document.querySelectorAll('[data-c="'+c+'"]'),function(e){e.textContent=fmt(c);e.className=cls});
+});
+var before=$("out").value;calc();
+if($("out").value!==before){var o=$("out").parentNode;o.classList.remove("flash");void o.offsetWidth;o.classList.add("flash")}
+}
+setInterval(tick,1800);
+// Real prices from CoinGecko's free public API (refreshed every 30s, falls back to the simulation if it fails)
+var IDS={BTC:"bitcoin",ETH:"ethereum",USDT:"tether",SOL:"solana",BNB:"binancecoin"};
+function pull(){
+var url="https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd,eur,xaf&ids="+Object.keys(IDS).map(function(k){return IDS[k]}).join(",");
+fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()}).then(function(d){
+var got=false;
+Object.keys(IDS).forEach(function(c){
+var p=d[IDS[c]];if(!p||!p.usd)return;got=true;
+var cls=p.usd>=USD[c]?"up":"dn";USD[c]=p.usd;LAST[c]=p.usd;
+Array.prototype.forEach.call(document.querySelectorAll('[data-c="'+c+'"]'),function(e){e.textContent=fmt(c);e.className=cls});
+});
+var b=d.bitcoin;if(b&&b.usd&&b.eur)FIAT.EUR=b.usd/b.eur;if(b&&b.usd&&b.xaf)FIAT.XAF=b.usd/b.xaf;
+if(!got)throw new Error("empty");
+LIVE=true;$("liveTag").textContent="Live rate";
+var before=$("out").value;calc();
+if($("out").value!==before){var o=$("out").parentNode;o.classList.remove("flash");void o.offsetWidth;o.classList.add("flash")}
+}).catch(function(){LIVE=false;$("liveTag").textContent="rate"});
+}
+
+var lbl=document.querySelector('label[for="out"]');lbl.insertAdjacentHTML("beforeend",' <span class="live" id="liveTag">Demo rate</span>');
+setup();
+pull();setInterval(pull,30000);
+</script>
+</body>
+</html>
